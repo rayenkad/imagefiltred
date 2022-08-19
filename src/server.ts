@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import {Router,Request, Response} from 'express';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
 (async () => {
@@ -28,13 +29,25 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
-
+  app.get("/filteredimage/",async (req: Request,res: Response)=>{
+    let {image_url}: any = req.query;
+    if( !image_url ) {
+      return res.status(422)
+                .send(`Unprocessable entity`);
+    }
+      else{
+        filterImageFromURL(image_url).then((result)=>{
+        res.sendFile(result);
+        res.on(`finish`,()=>deleteLocalFiles([result]));
+        }).catch((err)=>res.status(422).send(err))
+      }
+  } );
   //! END @TODO1
   
   // Root Endpoint
   // Displays a simple message to the user
-  app.get( "/", async ( req, res ) => {
-    res.send("try GET /filteredimage?image_url={{}}")
+  app.get( "/", async ( req, resp ) => {
+    resp.send("try GET /filteredimage?image_url={{}}")
   } );
   
 
